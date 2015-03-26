@@ -1,0 +1,94 @@
+  This is the documentation for the tilted_RSA package of
+simulations. The simulations themselves are fairly
+straightforward. The size of the system to simulate is controlled in
+the parameters.h file. Also other important variables such as the
+default file names and the quitting threshold can be changed within
+this header file.
+
+  One should be careful however, that there is enough available memory
+to run these simulations. We have found that a lattice size of 4000 x
+4000 will require around 140 MB of RAM. Also, having the bent_umbrella
+simulation do the surface scan to calculate the surface coverage, can
+add anywhere from 5 - 24 hrs to a simulation depending on computer
+speed and system size.
+
+  One bug (feature) you should be aware of is that both classes of
+simulations use a lot of memory off of the stack. When running the
+simulation be sure to unlimit the stacksize if some memory limiting
+software is used.
+
+  As for the visualization program. This is there to generate a PovRay
+script from the output locations of either simulation. PovRay can be
+obtained for a variety of platforms at:
+
+http://www.povray.org
+
+ The visualization program will simply take the locations written from
+the original simulation, and write them as disk objects. Camera
+locations and light sources are specified in the "pov_header.pov"
+file. Use the -g option to generate this file. 
+
+If you have any questions or comments regarding the simulations,
+please email me at: mmeineke@nd.edu
+
+
+------------------------------------------------------------------------
+
+INSTALL:
+
+change to the src directory, and 'make all'
+
+-------------------------------------------------------------------------
+
+USAGE:
+
+-note: Only the correlate program needs filenames given to it. All the
+       other programs have default names specified in the parameters.h file.
+
+-=bent_umbrella=-
+
+  bent_umbrella [options]
+
+  Options:
+     -D         turn on the debugging output
+     -o <name>  the name of the orientation output file
+     -c <name>  the name of the coverage output file
+     -L         turns on the lattice constraint
+     -V         generate output locations and orientations
+                for visualization
+     -v <name>  the name for the visualization file
+     -S         turn on the surface probe scan for coverage
+
+
+-=octopus=-
+
+  octopus [options]
+
+  Options:
+     -D         turn on the debugging output
+     -o <name>  the name of the orientation output file
+     -c <name>  the name of the coverage output file
+     -L         turns on the lattice constraint
+     -V         generate output locations and orientations
+               for visualization
+     -v <name>  the name for the visualization file
+     -S         turn on the surface probe scan for coverage
+
+-=correlate=-
+
+  correlate filename1 filename2 ...
+
+
+-=visualize=-
+
+  visualize [options]
+
+  Options:
+     -I <input name>   the name of input locations file
+     -O <output name>  the name of the output script
+     -g                generate the pov_header.pov file
+                         -contains info on lighting and
+                          camera locations
+     -c                Turns on the color gradient.
+                         -note: will work only for the
+                                tilted umbrellas.
