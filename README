@@ -1,3 +1,13 @@
+Tilted RSA is a code which can perform Random Sequential Adsorption (RSA)
+simulations on extremely simple models for molecules which land on Gold 
+surfaces.
+
+A good place to read about this program is the following article: 
+Matthew A. Meineke and J. Daniel Gezelter, "A Random Sequential Adsorption 
+model for the differential coverage of Gold (111) surfaces by two related 
+Silicon phthalocyanines," J. Phys. Chem. B 105, 6515-6519 (2001).
+--------------------------------------------------------------------------
+
   This is the documentation for the tilted_RSA package of
 simulations. The simulations themselves are fairly
 straightforward. The size of the system to simulate is controlled in
