@@ -22,10 +22,11 @@ simulation do the surface scan to calculate the surface coverage, can
 add anywhere from 5 - 24 hrs to a simulation depending on computer
 speed and system size.
 
-  One bug (feature) you should be aware of is that both classes of
-simulations use a lot of memory off of the stack. When running the
-simulation be sure to unlimit the stacksize if some memory limiting
-software is used.
+  The original version of tiltedRSA had one bug (feature) in that 
+both classes of simulations use a lot of memory off of the stack. 
+When running the simulation be sure to unlimit the stacksize if 
+some memory limiting software is used.  The most recent release 
+should (hopefully) eliminate this issue.
 
   As for the visualization program. This is there to generate a PovRay
 script from the output locations of either simulation. PovRay can be
