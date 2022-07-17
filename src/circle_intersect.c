@@ -15,7 +15,8 @@
  *    A. Meineke and J. Daniel Gezelter, "A Random Sequential 
  *    Adsorption model for the differential coverage of Gold (111)
  *    surfaces by two related Silicon phthalocyanines,"
- *    J. Phys. Chem. A XX, XXXX-YYYY (2001)). 
+ *    J. Phys. Chem. B 105, pp. 6515-6519 (2001). 
+ *    DOI: 10.1021/jp010985m
  * 
  * 2. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
