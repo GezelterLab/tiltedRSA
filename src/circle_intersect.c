@@ -322,8 +322,8 @@ int circle_compare(site1_ptr, site2_ptr)
  * the sequential test easier in the circle_compare algorithm.
  ****************************************************************************/
 
-static int find_roots(x_element_ptr, y_element_ptr, z_element_ptr,
-		      center_ptr, intersect_ptr)
+int find_roots(x_element_ptr, y_element_ptr, z_element_ptr,
+	       center_ptr, intersect_ptr)
      struct line_element *x_element_ptr; /* the pointer to the x element
 					    of the parametric line. */
      struct line_element *y_element_ptr;  /* the pointer to the y element
@@ -381,7 +381,7 @@ static int find_roots(x_element_ptr, y_element_ptr, z_element_ptr,
 }
 
 
-static double map_x(unmapped)
+double map_x(unmapped)
      double unmapped;
 { 
   const double length_X = NND * MAXLATTICE;/* length of the x side of the 
@@ -402,7 +402,7 @@ static double map_x(unmapped)
 
 /* responsible for mapping the y direction in the periodic box. */
 
-static double map_y(unmapped)
+double map_y(unmapped)
      double unmapped;
 {
   const double sqrt3 = 1.732050808; /* square root of three, a commonly 

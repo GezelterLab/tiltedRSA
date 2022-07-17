@@ -1,4 +1,3 @@
-
 /*
  * bent_umbrella.c    1.0  2001/05/16
  *
@@ -76,7 +75,7 @@ int debug = 0; /*boolean for the debugging output option.*/
 int lattice = 0; /*boolean for turning on the underlying lattice. */
 char *program_name; /*the name of the program in case we need it*/
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char *argv[];
 {

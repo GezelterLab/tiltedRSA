@@ -75,7 +75,7 @@ struct particle {
 
 char *program_name; /*gives us the name that the program was run as*/
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char *argv[];
 {

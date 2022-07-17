@@ -80,7 +80,7 @@ struct linked_hist *first_g = NULL; /* the first hist in the normal
 
 
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char *argv[];
 {
