@@ -86,9 +86,9 @@ struct point { /*structure to hold the coordinates of a point in 3 space. */
  * attached umbrella.
  **************************************************************************/
 
-int handle_compare(set_ptr, test_ptr)
-     struct coords *set_ptr;
-     struct coords *test_ptr;
+int handle_compare(set, test)
+     struct coords set;
+     struct coords test;
 {
   double map_x(double); /*function for mapping the periodic box. */
   double map_y(double); /*function for mapping the periodic box. */
@@ -120,8 +120,8 @@ int handle_compare(set_ptr, test_ptr)
   /* scale the test umbrella's coordinates to share the same origin as the 
      set umbrella*/
 
-  dx = test_ptr->x - set_ptr->x;
-  dy = test_ptr->y - set_ptr->y;
+  dx = test.x - set.x;
+  dy = test.y - set.y;
 
   /* evoke the periodic box. */
   
@@ -130,8 +130,8 @@ int handle_compare(set_ptr, test_ptr)
 
   /* rotate the new x and y into the projection reference frame */
   
-  x_rot = dx * cos(set_ptr->theta) + dy * sin(set_ptr->theta);
-  y_rot = dy * cos(set_ptr->theta) - dx * sin(set_ptr->theta);
+  x_rot = dx * cos(set.theta) + dy * sin(set.theta);
+  y_rot = dy * cos(set.theta) - dx * sin(set.theta);
 
   /* sum the distances from the test point to the two foci*/
 
@@ -166,17 +166,17 @@ int handle_compare(set_ptr, test_ptr)
  * one umbrella top before it intersects the second.
  ****************************************************************************/
 
-int circle_compare(site1_ptr, site2_ptr)
-     struct coords *site1_ptr;
-     struct coords *site2_ptr;
+int circle_compare(site1, site2)
+     struct coords site1;
+     struct coords site2;
 {
   double map_x(double); /*function for mapping the periodic box. */
   double map_y(double); /*function for mapping the periodic box. */
 
   /* function to find the roots of intersection between a parametric line,
      and a sphere. */
-  int find_roots(struct line_element*, struct line_element*, 
-		 struct line_element*, struct point*, struct roots*); 
+  int find_roots(struct line_element, struct line_element, 
+		 struct line_element, struct point, struct roots); 
 
   double n1x,n1y,n1z; /*temporary variables to hold the x, y, and z 
 			coefficients of the vector normal to the plane of 
@@ -209,12 +209,12 @@ int circle_compare(site1_ptr, site2_ptr)
  
   /* set the points */
   
-  p1x = site1_ptr->x;
-  p1y = site1_ptr->y;
+  p1x = site1.x;
+  p1y = site1.y;
   p1z = HANDLE_LENGTH;
   
-  p2x = site2_ptr->x;
-  p2y = site2_ptr->y;
+  p2x = site2.x;
+  p2y = site2.y;
   p2z = HANDLE_LENGTH;
 
   /*evoke periodic boundary conditions. */
@@ -231,12 +231,12 @@ int circle_compare(site1_ptr, site2_ptr)
   
   /*set the normals*/
   
-  n1x = cos(M_PI - PHI) * cos(M_PI_2 + site1_ptr->theta);
-  n1y = cos(M_PI - PHI) * sin(M_PI_2 + site1_ptr->theta);
+  n1x = cos(M_PI - PHI) * cos(M_PI_2 + site1.theta);
+  n1y = cos(M_PI - PHI) * sin(M_PI_2 + site1.theta);
   n1z = sin(M_PI - PHI);
   
-  n2x = cos(M_PI - PHI) * cos(M_PI_2 + site2_ptr->theta);
-  n2y = cos(M_PI - PHI) * sin(M_PI_2 + site2_ptr->theta);
+  n2x = cos(M_PI - PHI) * cos(M_PI_2 + site2.theta);
+  n2y = cos(M_PI - PHI) * sin(M_PI_2 + site2.theta);
   n2z = sin(M_PI - PHI);
   
   /* set the offset terms and the denominator of the parametric line */
@@ -268,8 +268,8 @@ int circle_compare(site1_ptr, site2_ptr)
   
   /* find the points of intersection with the first circle and the line*/
   
-  roots_exist = find_roots(&x_element, &y_element, &z_element, 
-			   &sphere_center, &intersect_1);
+  roots_exist = find_roots(x_element, y_element, z_element, 
+			   sphere_center, intersect_1);
   
   /* if the circle was indeed intersected, then check the intersection of 
      the second circle */
@@ -284,8 +284,8 @@ int circle_compare(site1_ptr, site2_ptr)
     
     /* find the points of intersection of the second circle with the line */
     
-    roots_exist = find_roots(&x_element, &y_element, &z_element, 
-			     &sphere_center, &intersect_2);
+    roots_exist = find_roots(x_element, y_element, z_element, 
+			     sphere_center, intersect_2);
     
     /* if the second circle was intersected, then test for overlap of the 
        two circles */
@@ -322,16 +322,13 @@ int circle_compare(site1_ptr, site2_ptr)
  * the sequential test easier in the circle_compare algorithm.
  ****************************************************************************/
 
-int find_roots(x_element_ptr, y_element_ptr, z_element_ptr,
-	       center_ptr, intersect_ptr)
-     struct line_element *x_element_ptr; /* the pointer to the x element
-					    of the parametric line. */
-     struct line_element *y_element_ptr;  /* the pointer to the y element
-					    of the parametric line. */
-     struct line_element *z_element_ptr;  /* the pointer to the x element
-					    of the parametric line. */
-     struct point *center_ptr; /*the pointer to the center of the sphere*/
-     struct roots *intersect_ptr; /*the pointer to the roots of intersection*/
+int find_roots(x_element, y_element, z_element,
+	       center, intersect)
+     struct line_element x_element; /* the x element of the parametric line. */
+     struct line_element y_element; /* the y element of the parametric line. */
+     struct line_element z_element; /* the z element of the parametric line. */
+     struct point center; /* the center of the sphere*/
+     struct roots intersect; /* the roots of intersection*/
 {
   
   double mx, my, mz; /*the coeff.'s for each line_element */
@@ -342,21 +339,21 @@ int find_roots(x_element_ptr, y_element_ptr, z_element_ptr,
 
   /* set the coeff.'s of the parametric line */
   
-  mx = x_element_ptr->coeff;
-  my = y_element_ptr->coeff;
-  mz = z_element_ptr->coeff;
+  mx = x_element.coeff;
+  my = y_element.coeff;
+  mz = z_element.coeff;
   
   /*set the cnst's of the parametric line*/
   
-  bx = x_element_ptr->cnst;
-  by = y_element_ptr->cnst;
-  bz = z_element_ptr->cnst;
+  bx = x_element.cnst;
+  by = y_element.cnst;
+  bz = z_element.cnst;
 
   /* set the center of the sphere*/
   
-  x0 = center_ptr->x;
-  y0 = center_ptr->y;
-  z0 = center_ptr->z;
+  x0 = center.x;
+  y0 = center.y;
+  z0 = center.z;
   
   /* set the coefficients of the quadratic equation. */
 
@@ -371,8 +368,8 @@ int find_roots(x_element_ptr, y_element_ptr, z_element_ptr,
   
   if((b*b - 4.0*a*c) > 0){
     
-    intersect_ptr->root1 = (-b + sqrt(b*b - 4.0*a*c)) / (2.0*a);
-    intersect_ptr->root2 = (-b - sqrt(b*b - 4.0*a*c)) / (2.0*a);
+    intersect.root1 = (-b + sqrt(b*b - 4.0*a*c)) / (2.0*a);
+    intersect.root2 = (-b - sqrt(b*b - 4.0*a*c)) / (2.0*a);
 
     return(1); /*return that roots were found */
   }

@@ -75,7 +75,7 @@ struct coords {
  *          0 => if overlap is false.
  *************************************************************************/
 
-extern int handle_compare(struct coords*, struct coords*);
+extern int handle_compare(struct coords, struct coords);
 
 /**************************************************************************
  * Function to check whether the top of one umbrella overlaps with that 
@@ -91,6 +91,6 @@ extern int handle_compare(struct coords*, struct coords*);
  *          0 => if overlap is false
  ***************************************************************************/
 
-extern int circle_compare(struct coords*, struct coords*);
+extern int circle_compare(struct coords, struct coords);
 
 

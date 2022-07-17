@@ -13,7 +13,7 @@
  *    program.  An acceptable form of acknowledgement is citation of
  *    the article in which the program was described (Matthew
  *    A. Meineke and J. Daniel Gezelter, "A Random Sequential 
- *    Adsorption model for the differential coverage of Gold (111)
+ *    Adsorption model for the differential coverage of Gol (111)
  *    surfaces by two related Silicon phthalocyanines,"
  *    J. Phys. Chem. A XX, XXXX-YYYY (2001)). 
  * 
@@ -65,6 +65,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <stdbool.h>
 #include "parameters.h"
 #include "circle_intersect.h"
 
@@ -169,8 +170,54 @@ int main(argc, argv)
   
   /* a purposeful overestimate of the likely number of umbrellas per bin. */
   const int maxUPB = 2 * ((int)((dBinX * dBinY) / (circleArea / 8.0)));
+
+  bool worked = true;
+  size_t ii, jj;
+  struct coords ***inBin = calloc( binsize, sizeof (struct coords) );
+  if (!inBin) {
+    (void)fprintf(stderr, "Bad calloc\n");
+    usage();
+  }
+
+  for (ii = 0; worked && ii < binsize; ii++) {
+    inBin[ii] = calloc( binsize, sizeof *inBin[ii] );
+    worked = (inBin[ii] != NULL);
+  }
+  // If allocating any inBin[ii] failed, free all inBin[0] through
+  // inBin[ii-1], *then* free inBin.  Freeing inBin alone won't free
+  // each inBin[ii].
+  if ( !worked ) {
+    while ( ii-- ) {
+      free( inBin[ii] );
+    }
+    free( inBin );
+    (void)fprintf(stderr, "Bad allocation\n");
+    usage();
+  }
   
-  struct coords *inBin_ptr[binsize][binsize][maxUPB];  
+  // for each inBin[ii], allocate inBin[ii][jj].  
+  for (ii = 0; worked && ii < binsize; ii++ ) {
+    for (jj = 0; worked && jj < binsize; jj++ ) {
+      inBin[ii][jj] = calloc( maxUPB, sizeof *inBin[ii][jj] );
+      worked = (inBin[ii][jj] != NULL );
+    }
+  }
+
+  // Same deal - if any inBin[ii][jj] allocation failed, free all
+  // inBin[ii][0] through inBin[ii][jj-1], *then* free all inBin[0]
+  // through inBin[ii], *then* free inBin.
+  if ( !worked ) {
+    do {
+      while ( jj-- )
+	free( inBin[ii][jj] );
+      free( inBin[ii] );
+    } while ( ii-- );
+    free( inBin );
+    (void)fprintf(stderr, "Bad allocation\n");
+    usage();
+  }
+
+  /*struct coords inBin[binsize][binsize][maxUPB];*/
   
   /***************************************************************************
    * end declarations
@@ -508,13 +555,13 @@ int main(argc, argv)
 	  
 	  /*test for handle overlapping a neighboring circle*/
 	  
-	  overlap = handle_compare(inBin_ptr[mod_Xbin][mod_Ybin][k], &temp);
+	  overlap = handle_compare(inBin[mod_Xbin][mod_Ybin][k], temp);
 	  
 	  /* if not, test to see if the two umbrella tops overlap.*/
 	  
 	  if(!overlap){
-	    overlap = circle_compare(inBin_ptr[mod_Xbin][mod_Ybin][k], 
-				     &temp);
+	    overlap = circle_compare(inBin[mod_Xbin][mod_Ybin][k], 
+				     temp);
 	  }
 	}
       }
@@ -528,7 +575,7 @@ int main(argc, argv)
       locations[success].x = temp.x;
       locations[success].y = temp.y;
       locations[success].theta = temp.theta;
-      inBin_ptr[Xbin][Ybin][nLanded[Xbin][Ybin]] = &locations[success];
+      inBin[Xbin][Ybin][nLanded[Xbin][Ybin]] = locations[success];
       nLanded[Xbin][Ybin]++;
       success++;
       
@@ -613,8 +660,8 @@ int main(argc, argv)
 	      
 	      /*test for scanning point overlapping a neighboring circle*/
 	      
-	      covered = handle_compare(inBin_ptr[mod_Xbin][mod_Ybin][k], 
-				       &temp);
+	      covered = handle_compare(inBin[mod_Xbin][mod_Ybin][k], 
+				       temp);
 	    }
 	  }
 	}
@@ -725,9 +772,9 @@ int main(argc, argv)
 	  /* calculate the normals */
 	  
 	  nx = cos(M_PI - PHI) *
-	    cos(M_PI_2 + inBin_ptr[mod_Xbin][mod_Ybin][k]->theta);
+	    cos(M_PI_2 + inBin[mod_Xbin][mod_Ybin][k].theta);
 	  ny = cos(M_PI - PHI) * 
-	    sin(M_PI_2 + inBin_ptr[mod_Xbin][mod_Ybin][k]->theta);
+	    sin(M_PI_2 + inBin[mod_Xbin][mod_Ybin][k].theta);
 	  nz = sin(M_PI - PHI);	  
 	  
 	  /* output the locations */
@@ -737,8 +784,8 @@ int main(argc, argv)
 			"n:\t%lf\t%lf\t%lf\n"
 			"r:\t%lf"
 			"\n",
-			inBin_ptr[mod_Xbin][mod_Ybin][k]->x,
-			inBin_ptr[mod_Xbin][mod_Ybin][k]->y,
+			inBin[mod_Xbin][mod_Ybin][k].x,
+			inBin[mod_Xbin][mod_Ybin][k].y,
 			HANDLE_LENGTH,
 			nx, ny, nz,
 			RADIUS);
@@ -759,7 +806,14 @@ int main(argc, argv)
   /* free up the allocated memory */
   
   free(locations);
-  
+
+  // free in reverse order of allocation
+  for ( ii = 0; i < binsize; ii++ ) {
+    for ( jj = 0; j < binsize; jj++ )
+	free( inBin[ii][jj] );
+    free( inBin[ii] );
+  }
+  free( inBin );
   return (0);
 }
 

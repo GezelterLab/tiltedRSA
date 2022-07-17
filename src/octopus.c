@@ -59,6 +59,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
 #include <time.h>
 #include "parameters.h"
@@ -174,8 +175,54 @@ int main(argc, argv)
   
   /* a purposeful overestimate of the likely number of octopi per bin. */
   const int maxUPB = 2 * ((int)((dBinX * dBinY) / (circleArea / 8.0)));
+
+  bool worked = true;
+  size_t ii, jj;
+  struct coords ***inBin = calloc( binsize, sizeof (struct coords) );
+  if (!inBin) {
+    (void)fprintf(stderr, "Bad calloc\n");
+    usage();
+  }
+
+  for (ii = 0; worked && ii < binsize; ii++) {
+    inBin[ii] = calloc( binsize, sizeof *inBin[ii] );
+    worked = (inBin[ii] != NULL);
+  }
+  // If allocating any inBin[ii] failed, free all inBin[0] through
+  // inBin[ii-1], *then* free inBin.  Freeing inBin alone won't free
+  // each inBin[ii].
+  if ( !worked ) {
+    while ( ii-- ) {
+      free( inBin[ii] );
+    }
+    free( inBin );
+    (void)fprintf(stderr, "Bad allocation\n");
+    usage();
+  }
   
-  struct coords *inBin_ptr[binsize][binsize][maxUPB];  
+  // for each inBin[ii], allocate inBin[ii][jj].  
+  for (ii = 0; worked && ii < binsize; ii++ ) {
+    for (jj = 0; worked && jj < binsize; jj++ ) {
+      inBin[ii][jj] = calloc( maxUPB, sizeof *inBin[ii][jj] );
+      worked = (inBin[ii][jj] != NULL );
+    }
+  }
+
+  // Same deal - if any inBin[ii][jj] allocation failed, free all
+  // inBin[ii][0] through inBin[ii][jj-1], *then* free all inBin[0]
+  // through inBin[ii], *then* free inBin.
+  if ( !worked ) {
+    do {
+      while ( jj-- )
+	free( inBin[ii][jj] );
+      free( inBin[ii] );
+    } while ( ii-- );
+    free( inBin );
+    (void)fprintf(stderr, "Bad allocation\n");
+    usage();
+  }
+
+  /*struct coords inBin[binsize][binsize][maxUPB];*/
   
   /***************************************************************************
    * end declarations
@@ -561,8 +608,8 @@ int main(argc, argv)
 	
 	for(k = 0; k < nLanded[mod_Xbin][mod_Ybin] && !overlap; k++){
 	  
-	  dx = temp.x - inBin_ptr[mod_Xbin][mod_Ybin][k]->x;
-	  dy = temp.y - inBin_ptr[mod_Xbin][mod_Ybin][k]->y;
+	  dx = temp.x - inBin[mod_Xbin][mod_Ybin][k].x;
+	  dy = temp.y - inBin[mod_Xbin][mod_Ybin][k].y;
 	  
 	  /* map the positions into the periodic box. */
 
@@ -589,7 +636,7 @@ int main(argc, argv)
       locations[success].x = temp.x;
       locations[success].y = temp.y;
       locations[success].theta = temp.theta;
-      inBin_ptr[Xbin][Ybin][nLanded[Xbin][Ybin]] = &locations[success];
+      inBin[Xbin][Ybin][nLanded[Xbin][Ybin]] = locations[success];
       nLanded[Xbin][Ybin]++;
       success++;
       
@@ -672,8 +719,8 @@ int main(argc, argv)
 	    
 	    for(k = 0; k < nLanded[mod_Xbin][mod_Ybin] && !covered; k++){
 	      
-	      dx = temp.x - inBin_ptr[mod_Xbin][mod_Ybin][k]->x;
-	      dy = temp.y - inBin_ptr[mod_Xbin][mod_Ybin][k]->y;
+	      dx = temp.x - inBin[mod_Xbin][mod_Ybin][k].x;
+	      dy = temp.y - inBin[mod_Xbin][mod_Ybin][k].y;
 	      
 	      /* map the positions into the periodic box. */
 	      
@@ -806,8 +853,8 @@ int main(argc, argv)
 			"n:\t%lf\t%lf\t%lf\n"
 			"r:\t%lf"
 			"\n",
-			inBin_ptr[mod_Xbin][mod_Ybin][k]->x,
-			inBin_ptr[mod_Xbin][mod_Ybin][k]->y,
+			inBin[mod_Xbin][mod_Ybin][k].x,
+			inBin[mod_Xbin][mod_Ybin][k].y,
 			HANDLE_LENGTH,
 			nx, ny, nz,
 			RADIUS);
@@ -829,7 +876,14 @@ int main(argc, argv)
   /* free up the allocated memory */
   
   free(locations);
-  
+  // free in reverse order of allocation
+  for ( ii = 0; i < binsize; ii++ ) {
+    for ( jj = 0; j < binsize; jj++ )
+      free( inBin[ii][jj] );
+    free( inBin[ii] );
+  }
+  free( inBin );
+   
   return (0);
 }
 
